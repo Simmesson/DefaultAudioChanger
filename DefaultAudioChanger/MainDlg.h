@@ -43,7 +43,9 @@ public:
         NOTIFY_HANDLER(IDC_DEVICES_LIST,LVN_ITEMCHANGED, OnItemChanged)
         COMMAND_RANGE_HANDLER(WM_USER+1,WM_USER+100,OnSpecificDeviceSelected)/*This means we can only have 100 devices*/
         COMMAND_HANDLER(IDC_HOTKEY_CHECK, BN_CLICKED, OnBnClickedHotkeyCheck)
+		COMMAND_HANDLER(IDC_AUDIOTEST_HOTKEY_CHECK, BN_CLICKED, OnBnClickedAudioTestHotkeyCheck)
         COMMAND_HANDLER(IDC_REGHOTKEY, EN_CHANGE, OnHotKeyChange)
+		COMMAND_HANDLER(IDC_REG_AUDIOTEST_HOTKEY, EN_CHANGE, OnAudioTestHotKeyChange)
         MESSAGE_HANDLER(WM_HOTKEY, OnHotKey)
         COMMAND_HANDLER(IDC_WINSTARTUP_CHECK, BN_CLICKED, OnBnClickedWinstartupCheck)
     END_MSG_MAP()
@@ -55,6 +57,7 @@ public:
     
     LRESULT OnHotKey(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
     LRESULT OnHotKeyChange(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	LRESULT OnAudioTestHotKeyChange(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
     LRESULT OnSpecificDeviceSelected(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
     LRESULT OnItemChanged(int /*idCtrl*/, LPNMHDR /*pnmh*/, BOOL& /*bHandled*/);	    
     HBRUSH OnCtlColorStatic(CDCHandle dc, CStatic wndStatic);
@@ -74,8 +77,10 @@ public:
     LRESULT OnBnClickedReloadButton(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
     LRESULT OnBnClickedSwitchButton(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
     LRESULT OnBnClickedHotkeyCheck(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	LRESULT OnBnClickedAudioTestHotkeyCheck(WORD, WORD, HWND, BOOL&);
     void SetDeviceSettingsKey(HKEY key);
     void SetAppSettingsKey(HKEY key);
+	void SetAudioTestAppSettingsKey(HKEY key);
     void UpdateApplicationIcon();
 private:
     BYTE hkf2modf(BYTE hkf);
@@ -83,6 +88,7 @@ private:
     void LoadInitialDeviceList();
     BOOL LoadDevicesIcons();
     void LoadHotkey();
+	void LoadAudioTestHotkey();
     void LoadStartupSetting();
 private:
     NOTIFYICONDATA notifyIconData;
@@ -92,10 +98,14 @@ private:
     HBRUSH m_hDialogBrush;
     HKEY deviceSettingsKey;
     HKEY appSettingsKey;
+	HKEY audioTestAppSettingsKey;
     CButton hotKeyCheckBox;
+	CButton audioTestHotKeyCheckBox;
     CButton startupCheckBox;
     CHotKeyCtrl hotKeyCtrl;
+	CHotKeyCtrl audioTestHotKeyCtrl;
     ATOM hotKeyId;
+	ATOM audioTestHotKeyId;
 public:
     LRESULT OnBnClickedWinstartupCheck(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 };

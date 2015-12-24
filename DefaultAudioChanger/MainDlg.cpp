@@ -23,6 +23,8 @@
 #include "MainDlg.h"
 #include "DevicesManager.h"
 
+#pragma comment(lib, "winmm.lib")
+
 #define STARTUP_KEY _T("DefaultAudioChanger")
 
 CMainDlg::CMainDlg()
@@ -72,6 +74,8 @@ LRESULT CMainDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam
     LoadInitialDeviceList();
 
     LoadHotkey();
+
+	LoadAudioTestHotkey();
 
     LoadStartupSetting();
 
@@ -123,6 +127,29 @@ void CMainDlg::LoadHotkey()
             //nothing really should happen here			
         }
     }
+}
+
+void CMainDlg::LoadAudioTestHotkey()
+{
+	audioTestHotKeyCheckBox.Attach(GetDlgItem(IDC_AUDIOTEST_HOTKEY_CHECK));
+	audioTestHotKeyCtrl.Attach(GetDlgItem(IDC_REG_AUDIOTEST_HOTKEY));
+
+	audioTestHotKeyId = GlobalAddAtom(L"DefaultAudioTest");
+	DWORD hotKey = 0;
+	DWORD hotKeysize = sizeof(DWORD);
+	HRESULT regOpResult = ::RegQueryValueEx(audioTestAppSettingsKey, L"AudioTestHotKey", NULL, NULL, (LPBYTE)&hotKey, &hotKeysize);
+	if (regOpResult == ERROR_SUCCESS)
+	{
+		::SendMessage(audioTestHotKeyCtrl.m_hWnd, HKM_SETHOTKEY, hotKey, 0L);
+		audioTestHotKeyCheckBox.SetCheck(TRUE);
+		audioTestHotKeyCtrl.EnableWindow(TRUE);
+		BYTE wVirtualKeyCode = LOBYTE(LOWORD(hotKey));
+		BYTE wModifiers = HIBYTE(LOWORD(hotKey));
+		if (!RegisterHotKey(m_hWnd, audioTestHotKeyId, hkf2modf(wModifiers), wVirtualKeyCode))
+		{
+			//nothing really should happen here			
+		}
+	}
 }
 
 BOOL CMainDlg::LoadDevicesIcons()
@@ -364,7 +391,9 @@ LRESULT CMainDlg::OnBtnClose(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, B
 void CMainDlg::CloseDialog(int nVal)
 {
     UnregisterHotKey(m_hWnd,hotKeyId);
+	UnregisterHotKey(m_hWnd, audioTestHotKeyId);
     GlobalDeleteAtom(hotKeyId);
+	GlobalDeleteAtom(audioTestHotKeyId);
     DestroyWindow();	
     ::PostQuitMessage(nVal);
 }
@@ -426,6 +455,11 @@ void CMainDlg::SetDeviceSettingsKey(HKEY key)
 void CMainDlg::SetAppSettingsKey(HKEY key)
 {
     appSettingsKey=key;
+}
+
+void CMainDlg::SetAudioTestAppSettingsKey(HKEY key)
+{
+	audioTestAppSettingsKey = key;
 }
 
 LRESULT CMainDlg::OnItemChanged(int /*idCtrl*/, LPNMHDR pnmh, BOOL& bHandled)
@@ -501,6 +535,30 @@ LRESULT CMainDlg::OnBnClickedHotkeyCheck(WORD /*wNotifyCode*/, WORD /*wID*/, HWN
     return 0;
 }
 
+LRESULT CMainDlg::OnBnClickedAudioTestHotkeyCheck(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& bHandled)
+{
+	BOOL checked = audioTestHotKeyCheckBox.GetCheck();
+	audioTestHotKeyCtrl.EnableWindow(checked);
+	if (!checked)
+	{
+		LONG result = ::RegDeleteKeyValue(audioTestAppSettingsKey, NULL, L"AudioTestHotKey");
+		UnregisterHotKey(m_hWnd, audioTestHotKeyId);
+		audioTestHotKeyCtrl.SetHotKey(0, 0);
+	}
+	else
+	{
+		WORD hotKey;
+		DWORD hotKeysize = sizeof(WORD);
+		LONG result = ::RegQueryValueEx(audioTestAppSettingsKey, L"AudioTestHotKey", NULL, NULL, (LPBYTE)&hotKey, &hotKeysize);
+		if (result == ERROR_SUCCESS)
+		{
+			::SendMessage(audioTestHotKeyCtrl.m_hWnd, HKM_SETHOTKEY, hotKey, 0L);
+		}
+	}
+	bHandled = true;
+	return 0;
+}
+
 BYTE CMainDlg::hkf2modf(BYTE hkf)
 {
     BYTE modf = 0;
@@ -538,12 +596,38 @@ LRESULT CMainDlg::OnHotKeyChange(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWnd
     return 0;
 }
 
+LRESULT CMainDlg::OnAudioTestHotKeyChange(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
+{
+	WORD hotKey;
+	DWORD hotKeysize = sizeof(WORD);
+	WORD wVirtualKeyCode, wModifiers;
+	audioTestHotKeyCtrl.GetHotKey(wVirtualKeyCode, wModifiers);
+	hotKey = MAKEWORD(wVirtualKeyCode, wModifiers);
+	LONG result = ::RegSetValueEx(audioTestAppSettingsKey, L"AudioTestHotKey", NULL, REG_BINARY, (BYTE*)&hotKey, sizeof(hotKeysize));
+	UnregisterHotKey(m_hWnd, audioTestHotKeyId);
+	ATLTRACE2(L"wVirtualKeyCode:= %d, wModifiers=%d\n", wVirtualKeyCode, wModifiers);
+	if (!RegisterHotKey(m_hWnd, audioTestHotKeyId, hkf2modf((BYTE)wModifiers), wVirtualKeyCode))
+	{
+		::MessageBox(m_hWnd, L"Cannot register this hotkey", L"Error", MB_OK | MB_ICONERROR);
+	}
+
+	return 0;
+}
+
+DWORD WINAPI testAudioSourceThread(LPVOID data) { // Only wrapped PlaySound() here
+	PlaySound(TEXT("test.wav"), NULL, SND_FILENAME);
+	return 0;
+}
+
 LRESULT CMainDlg::OnHotKey(UINT /*uMsg*/, WPARAM wParam, LPARAM /*lParam*/, BOOL& bHandled)
 {
     if(wParam==hotKeyId)
     {
         return OnBnClickedSwitchButton(0,0,0,bHandled);	
     }
+	else if (wParam == audioTestHotKeyId) {
+		CreateThread(NULL, 0, testAudioSourceThread, NULL, 0, NULL);
+	}
 
     return 0;
 }

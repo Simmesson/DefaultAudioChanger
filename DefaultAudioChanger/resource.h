@@ -13,7 +13,9 @@
 #define IDC_DESC_STATIC                 1004
 #define IDC_GPL_LINK_STATIC             1005
 #define IDC_HOTKEY_CHECK                1007
+#define IDC_AUDIOTEST_HOTKEY_CHECK		1008
 #define IDC_REGHOTKEY                   1009
+#define IDC_REG_AUDIOTEST_HOTKEY		1013
 #define IDC_CHECK1                      1010
 #define IDC_WINSTARTUP_CHECK            1010
 #define IDC_BUTTON1                     1011

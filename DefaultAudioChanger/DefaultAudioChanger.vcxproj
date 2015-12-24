@@ -66,7 +66,7 @@
     <IntDir>$(OutDir)</IntDir>
     <OutDir>$(OutDir)</OutDir>
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>C:\WTL81\include;$(IncludePath)</IncludePath>
+    <IncludePath>C:\C++-Libraries\WTL-9.1-Final\Include;C:\WTL81\include;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <IntDir>$(OutDir)</IntDir>
@@ -78,7 +78,7 @@
     <IntDir>$(OutDir)</IntDir>
     <OutDir>$(OutDir)</OutDir>
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>C:\WTL90_4140_Final\Include;$(IncludePath)</IncludePath>
+    <IncludePath>C:\C++-Libraries\WTL-9.1-Final\Include;C:\WTL90_4140_Final\Include;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <IntDir>$(OutDir)</IntDir>
@@ -96,6 +96,7 @@
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_WINDOWS;STRICT;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>C:\C++-Libraries\WTL-9.1-Final\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -163,6 +164,7 @@
       <DebugInformationFormat>
       </DebugInformationFormat>
       <PreprocessorDefinitions>WIN32;_WINDOWS;STRICT;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>C:\C++-Libraries\WTL-9.1-Final\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
